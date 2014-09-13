@@ -1,0 +1,23 @@
+{
+  "name": "controller",
+  "version": "0.0.0",
+  "description": "",
+  "main": "controller.js",
+  "dependencies": {
+    "body-parser": "~1.0.2",
+    "console": "~0.5.2",
+    "express": "~4.0.0",
+    "fs": "~0.0.2",
+    "http": "~0.0.0",
+    "mqtt": "~0.3.12",
+    "serialport": "~1.4.6",
+    "socket.io": "~1.1.0",
+    "url": "~0.10.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "sushyad@gmail.com",
+  "license": "ISC"
+}
