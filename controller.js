@@ -6,8 +6,9 @@ var express    = require('express'); 		// call express
 var app        = express(); 				// define our app using express
 var bodyParser = require('body-parser');
 var mqtt = require('mqtt');
+var options = {reconnectPeriod: 5000};
 
-var mqttClient = mqtt.createClient(1883, '192.168.0.109');
+var mqttClient = mqtt.createClient(1883, '192.168.0.109', options);
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -23,7 +24,10 @@ var router = express.Router(); 				// get an instance of the express Router
 var serialport = require("serialport");
 var serial = new serialport.SerialPort("/dev/ttyUSB0", { baudrate : 9600, parser: serialport.parsers.readline("\n") });
 
-mqttClient.subscribe('wsn/+/command');
+mqttClient.on('connect', function() {
+  mqttClient.subscribe('wsn/+/command');
+  console.log('Connected');
+});
 
 mqttClient.on('message', function(topic, message) {
   //sample message: Switch21_BTN0:ON
@@ -52,6 +56,26 @@ mqttClient.on('message', function(topic, message) {
     }
   }
 });
+/*
+  mqttClient.on('pingreq', function(packet) {
+    console.log('Received pingreq');
+    mqttClient.pingresp();
+  });
+
+  mqttClient.on('disconnect', function(packet) {
+    console.log('Received disconnect');
+    mqttClient.stream.end();
+  });
+
+  mqttClient.on('close', function(err) {
+    console.log('Received error: ' + err);
+  });
+
+  mqttClient.on('error', function(err) {
+    console.log('error!', err);
+    mqttClient.disconnect();
+  });
+*/
 
 serial.on("data", function (data) {
   var status = '';
