@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var mqtt = require('mqtt');
 var options = {reconnectPeriod: 5000};
 
-var mqttClient = mqtt.createClient(1883, '192.168.0.109', options);
+var mqttClient = mqtt.createClient(1883, '192.168.0.9', options);
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
