@@ -17,6 +17,8 @@ app.use(bodyParser.json());
 
 var port = process.env.PORT || 8080; 		// set our port
 
+var dryerStateChangeTime, isDryerOn = false;
+
 // ROUTES FOR OUR API
 // =============================================================================
 var router = express.Router(); 				// get an instance of the express Router
@@ -86,12 +88,48 @@ serial.on("data", function (data) {
   if (data.indexOf(' UNKNOWN ') != -1) status = 'Unknown';
 
   if (data.length > 0) {
+    data = data.trim();
+
     console.log('Data: ' + data);
 
+    var switchId = data.substring(data.indexOf('[') + 1, data.indexOf(']'));
+
+    if (switchId == '41') {
+      if (data.indexOf('D1') > 0) {
+
+        if (!isDryerOn) {
+          console.log("Dryer turned ON");
+          isDryerOn == true;
+          dryerStateChangeTime = new Date();
+          mqttClient.publish('wsn/dryer/state', 'ON', function() {
+            //console.log("Message has been published");
+          });           
+        }
+      } else if (data.indexOf('D0') > 0) {
+        if (isDryerOn) {
+          isDryerOn = false;
+          dryerStateChangeTime = new Date();
+        } else if (dryerStateChangeTime) {
+          var now = new Date();
+          if ((now.getTime() - dryerStateChangeTime.getTime()) > 30000) {
+            //the dryer has been off for more than 30s, send an alert
+            console.log('Dryer has been off for more than 30s!!!');
+            mqttClient.publish('wsn/dryer/state', 'OFF', function() {
+              //console.log("Message has been published");
+            });           
+          }
+        }
+        
+        console.log("Dryer is OFF");
+      } else if (data.indexOf('W1' > 0)) {
+        console.log("Washer is ON");
+      } else if (data.indexOf('W0' > 0)) {
+        console.log("Washer is OFF");
+      }
+    } else {
     var indexOfPulseCount = data.indexOf('Pulsecount');
     var indexOfBtn = data.indexOf('BTN');
     if (indexOfPulseCount > -1) {
-      data = data.trim();
       var indexOfPower =  data.indexOf('Power');
       var pulseCount = data.substring(indexOfPulseCount + 12, indexOfPower - 1);
       var power = data.substring(indexOfPower + 7);
@@ -108,7 +146,6 @@ serial.on("data", function (data) {
       });
     } else if (indexOfBtn > 0 && data.indexOf('Command') < 0) {
       data = data.trim();
-      var switchId = data.substring(data.indexOf('[') + 1, data.indexOf(']'));
       var indexOfColon = data.indexOf(':');
       var buttonId = data.substring(indexOfBtn + 3, indexOfColon);
       var buttonState = data.substring(indexOfColon + 1);
@@ -116,6 +153,7 @@ serial.on("data", function (data) {
       mqttClient.publish('wsn/Switch' + switchId + '_BTN' + buttonId + '/state', buttonState == '0' ? 'OFF' : 'ON', function() {
         //console.log("Message has been published");
       });
+    }
     }
   }
 });
