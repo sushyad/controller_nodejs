@@ -56,8 +56,13 @@ mqttClient.on('message', function(topic, message) {
         serial.write('SWITCH' + switchId + message + '\r');
       }
     }
+  } else if (item == 'DRYER') {
+    if (message == 'getStatus') {
+      serial.write('DRYER:' + message + '\r');
+    }
   }
 });
+
 /*
   mqttClient.on('pingreq', function(packet) {
     console.log('Received pingreq');
