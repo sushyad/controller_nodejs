@@ -104,7 +104,7 @@ serial.on("data", function (data) {
 
         if (!isDryerOn) {
           console.log("Dryer turned ON");
-          isDryerOn == true;
+          isDryerOn = true;
           dryerStateChangeTime = new Date();
           mqttClient.publish('wsn/dryer/state', 'ON', function() {
             //console.log("Message has been published");
@@ -112,17 +112,11 @@ serial.on("data", function (data) {
         }
       } else if (data.indexOf('D0') > 0) {
         if (isDryerOn) {
+          console.log('Dryer just turned off!');
+          mqttClient.publish('wsn/dryer/state', 'OFF', function() {
+            console.log("Message has been published");
+          });
           isDryerOn = false;
-          dryerStateChangeTime = new Date();
-        } else if (dryerStateChangeTime) {
-          var now = new Date();
-          if ((now.getTime() - dryerStateChangeTime.getTime()) > 30000) {
-            //the dryer has been off for more than 30s, send an alert
-            console.log('Dryer has been off for more than 30s!!!');
-            mqttClient.publish('wsn/dryer/state', 'OFF', function() {
-              //console.log("Message has been published");
-            });           
-          }
         }
         
         console.log("Dryer is OFF");
