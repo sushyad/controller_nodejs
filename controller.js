@@ -175,6 +175,12 @@ router.put('/projector', function(req, res) {
 	res.json({ message: 'sent the command to projector'});
 });
 
+router.get('/dryer/state', function(req, res) {
+	console.log('Received status request for dryer');
+	res.writeHead(200, {'Content-Type': 'text/plain'});
+	res.end(isDryerOn ? 'ON' : 'OFF');
+});
+
 // more routes for our API will happen here
 
 // REGISTER OUR ROUTES -------------------------------
